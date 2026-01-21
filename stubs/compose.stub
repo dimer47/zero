@@ -1,0 +1,24 @@
+# For more information: https://github.com/dimer47/zero
+services:
+    laravel.zero:
+        build:
+            context: ./vendor/dimer47/zero/runtimes/{{PHP_VERSION}}
+            dockerfile: Dockerfile
+            args:
+                ZEROGROUP: '${ZEROGROUP:-1000}'
+                ZEROUSER: '${ZEROUSER:-1000}'
+        image: zero-{{PHP_VERSION}}/app
+        extra_hosts:
+            - 'host.docker.internal:host-gateway'
+        environment:
+            ZEROUSER: '${ZEROUSER:-1000}'
+            ZEROGROUP: '${ZEROGROUP:-1000}'
+        volumes:
+            - '.:/var/www/html'
+        stdin_open: true
+        tty: true
+        networks:
+            - zero
+networks:
+    zero:
+        driver: bridge

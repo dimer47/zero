@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+# Ajuster l'UID/GID de l'utilisateur zero si nécessaire
+if [ ! -z "$ZEROUSER" ]; then
+    usermod -u $ZEROUSER zero 2>/dev/null || true
+fi
+
+if [ ! -z "$ZEROGROUP" ]; then
+    groupmod -g $ZEROGROUP zero 2>/dev/null || true
+fi
+
+# S'assurer que le dossier .composer existe et a les bonnes permissions
+if [ ! -d /home/zero/.composer ]; then
+    mkdir -p /home/zero/.composer
+fi
+
+chown -R zero:zero /home/zero/.composer 2>/dev/null || true
+chown -R zero:zero /var/www/html 2>/dev/null || true
+
+# Exécuter la commande en tant qu'utilisateur zero
+if [ $# -gt 0 ]; then
+    exec su-exec zero "$@"
+else
+    exec su-exec zero php artisan
+fi
