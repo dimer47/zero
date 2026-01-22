@@ -1,6 +1,12 @@
 # Release Notes
 
-## [Unreleased](https://github.com/dimer47/zero/compare/v1.0.1...HEAD)
+## [Unreleased](https://github.com/dimer47/zero/compare/v1.0.2...HEAD)
+
+## v1.0.2 - 2026-01-22
+
+### Added
+
+- Added recommended shell alias documentation in README for better developer experience
 
 ## v1.0.1 - 2026-01-22
 

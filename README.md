@@ -53,6 +53,28 @@ Build the Docker image:
 ./vendor/bin/zero build
 ```
 
+### 🎯 Shell Alias (Recommended)
+
+For a better developer experience, add this alias to your shell configuration (`~/.zshrc` or `~/.bashrc`):
+
+```bash
+alias zero='$([ -f zero ] && echo ./zero || echo ./vendor/bin/zero)'
+```
+
+Then reload your shell:
+
+```bash
+source ~/.zshrc  # or source ~/.bashrc
+```
+
+Now you can use `zero` directly instead of `./vendor/bin/zero`:
+
+```bash
+zero list
+zero build
+zero pest
+```
+
 ## 📖 Usage
 
 ### 🎯 Application Commands
