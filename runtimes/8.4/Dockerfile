@@ -9,7 +9,7 @@ WORKDIR /var/www/html
 
 ENV TZ=UTC
 
-# Installer les dépendances système essentielles pour Laravel Zero
+# Install essential system dependencies for Laravel Zero
 RUN apk add --no-cache \
     bash \
     git \
@@ -18,12 +18,13 @@ RUN apk add --no-cache \
     curl \
     shadow \
     su-exec \
+    jq \
     libzip-dev \
     icu-dev \
     oniguruma-dev \
     linux-headers
 
-# Installer les extensions PHP requises pour Laravel Zero
+# Install required PHP extensions for Laravel Zero
 RUN docker-php-ext-install \
     pdo \
     pdo_mysql \
@@ -33,19 +34,18 @@ RUN docker-php-ext-install \
     pcntl \
     bcmath
 
-# Installer Composer
+# Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Créer l'utilisateur zero
+# Create the zero user
 RUN delgroup dialout \
     && addgroup -g ${ZEROGROUP} zero \
     && adduser -D -u ${ZEROUSER} -G zero -h /home/zero -s /bin/bash zero \
     && mkdir -p /home/zero/.composer \
     && chown -R zero:zero /home/zero
 
-# Copier le script de démarrage
+# Copy the startup script
 COPY start-container /usr/local/bin/start-container
 RUN chmod +x /usr/local/bin/start-container
 
 ENTRYPOINT ["start-container"]
-CMD ["php", "artisan"]

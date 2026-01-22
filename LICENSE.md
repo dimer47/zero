@@ -1,7 +1,10 @@
 The MIT License (MIT)
 
-Copyright (c) Taylor Otwell  
-Copyright (c) Chris Fidao
+Copyright (c) 2025 Dimitri Iachi
+
+Based on Laravel Sail, originally created by:
+- Taylor Otwell
+- Chris Fidao
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

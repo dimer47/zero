@@ -1,6 +1,6 @@
 {
     "name": "dimer47/zero",
-    "description": "Docker files for running Laravel Zero applications",
+    "description": "Lightweight Docker wrapper for Laravel Zero CLI applications, inspired by Laravel Sail",
     "keywords": ["laravel-zero", "docker", "cli"],
     "license": "MIT",
     "support": {
@@ -9,7 +9,7 @@
     },
     "authors": [
         {
-            "name": "Dimitri Iachimoe",
+            "name": "Dimitri Iachi",
             "email": "iachi.dimitri@gmail.com"
         }
     ],
@@ -18,8 +18,7 @@
         "illuminate/console": "^9.52.16|^10.0|^11.0|^12.0",
         "illuminate/contracts": "^9.52.16|^10.0|^11.0|^12.0",
         "illuminate/support": "^9.52.16|^10.0|^11.0|^12.0",
-        "symfony/console": "^6.0|^7.0",
-        "symfony/yaml": "^6.0|^7.0"
+        "symfony/console": "^6.0|^7.0"
     },
     "require-dev": {
         "orchestra/testbench": "^7.0|^8.0|^9.0|^10.0",

@@ -3,67 +3,109 @@
 namespace Dimer47\Zero\Console;
 
 use Illuminate\Console\Command;
-use Dimer47\Zero\Console\Concerns\InteractsWithDockerComposeServices;
 use Symfony\Component\Console\Attribute\AsCommand;
 
-#[AsCommand(name: 'sail:publish')]
+#[AsCommand(name: 'zero:publish')]
 class PublishCommand extends Command
 {
-    use InteractsWithDockerComposeServices;
-
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'sail:publish';
+    protected $signature = 'zero:publish
+                {--force : Overwrite existing files}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Publish the Laravel Sail Docker files';
+    protected $description = 'Publish Zero Docker runtimes to your project for customization';
 
     /**
      * Execute the console command.
      *
-     * @return void
+     * @return int
      */
     public function handle()
     {
-        $this->call('vendor:publish', ['--tag' => 'sail-docker']);
-        $this->call('vendor:publish', ['--tag' => 'sail-database']);
+        $this->publishRuntimes();
 
-        $composePath = $this->composePath();
+        $this->output->writeln('');
+        $this->components->info('Zero Docker runtimes published successfully.');
+        $this->output->writeln('');
+        $this->components->info('You can now customize the Dockerfiles in the docker/ directory.');
+        $this->components->warn('Remember to update your docker-compose.yml to point to ./docker/{PHP_VERSION} instead of ./vendor/dimer47/zero/runtimes/{PHP_VERSION}');
+        $this->output->writeln('');
 
-        file_put_contents(
-            $composePath,
-            str_replace(
-                [
-                    './vendor/laravel/sail/runtimes/8.5',
-                    './vendor/laravel/sail/runtimes/8.4',
-                    './vendor/laravel/sail/runtimes/8.3',
-                    './vendor/laravel/sail/runtimes/8.2',
-                    './vendor/laravel/sail/runtimes/8.1',
-                    './vendor/laravel/sail/runtimes/8.0',
-                    './vendor/laravel/sail/database/mariadb',
-                    './vendor/laravel/sail/database/mysql',
-                    './vendor/laravel/sail/database/pgsql'
-                ],
-                [
-                    './docker/8.5',
-                    './docker/8.4',
-                    './docker/8.3',
-                    './docker/8.2',
-                    './docker/8.1',
-                    './docker/8.0',
-                    './docker/mariadb',
-                    './docker/mysql',
-                    './docker/pgsql'
-                ],
-                file_get_contents($composePath)
-            )
-        );
+        return 0;
+    }
+
+    /**
+     * Publish the runtime files.
+     *
+     * @return void
+     */
+    protected function publishRuntimes()
+    {
+        $source = __DIR__ . '/../../runtimes';
+        $destination = $this->laravel->basePath('docker');
+
+        if (!is_dir($destination)) {
+            mkdir($destination, 0755, true);
+        }
+
+        $versions = ['8.2', '8.3', '8.4'];
+
+        foreach ($versions as $version) {
+            $sourceDir = $source . '/' . $version;
+            $destDir = $destination . '/' . $version;
+
+            if (!is_dir($sourceDir)) {
+                continue;
+            }
+
+            if (is_dir($destDir) && !$this->option('force')) {
+                if (!$this->components->confirm("The directory docker/{$version} already exists. Overwrite?", false)) {
+                    $this->components->info("Skipped PHP {$version}");
+                    continue;
+                }
+            }
+
+            $this->copyDirectory($sourceDir, $destDir);
+            $this->components->info("Published PHP {$version} runtime to docker/{$version}");
+        }
+    }
+
+    /**
+     * Copy a directory recursively.
+     *
+     * @param string $source
+     * @param string $destination
+     * @return void
+     */
+    protected function copyDirectory(string $source, string $destination)
+    {
+        if (!is_dir($destination)) {
+            mkdir($destination, 0755, true);
+        }
+
+        $files = scandir($source);
+
+        foreach ($files as $file) {
+            if ($file === '.' || $file === '..') {
+                continue;
+            }
+
+            $sourcePath = $source . '/' . $file;
+            $destPath = $destination . '/' . $file;
+
+            if (is_dir($sourcePath)) {
+                $this->copyDirectory($sourcePath, $destPath);
+            } else {
+                copy($sourcePath, $destPath);
+            }
+        }
     }
 }

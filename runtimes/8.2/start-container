@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Ajuster l'UID/GID de l'utilisateur zero si nécessaire
+# Adjust the UID/GID of the zero user if necessary
 if [ ! -z "$ZEROUSER" ]; then
     usermod -u $ZEROUSER zero 2>/dev/null || true
 fi
@@ -9,7 +9,7 @@ if [ ! -z "$ZEROGROUP" ]; then
     groupmod -g $ZEROGROUP zero 2>/dev/null || true
 fi
 
-# S'assurer que le dossier .composer existe et a les bonnes permissions
+# Ensure the .composer directory exists with correct permissions
 if [ ! -d /home/zero/.composer ]; then
     mkdir -p /home/zero/.composer
 fi
@@ -17,9 +17,16 @@ fi
 chown -R zero:zero /home/zero/.composer 2>/dev/null || true
 chown -R zero:zero /var/www/html 2>/dev/null || true
 
-# Exécuter la commande en tant qu'utilisateur zero
+# Detect the binary name from composer.json ("bin" field)
+# Fallback to "application" if not found
+APP_BINARY=$(jq -r '.bin[0] // empty' /var/www/html/composer.json 2>/dev/null)
+if [ -z "$APP_BINARY" ]; then
+    APP_BINARY="application"
+fi
+
+# Execute the command as the zero user
 if [ $# -gt 0 ]; then
     exec su-exec zero "$@"
 else
-    exec su-exec zero php artisan
+    exec su-exec zero php "$APP_BINARY"
 fi

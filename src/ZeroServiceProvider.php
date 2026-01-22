@@ -4,7 +4,6 @@ namespace Dimer47\Zero;
 
 use Illuminate\Contracts\Support\DeferrableProvider;
 use Illuminate\Support\ServiceProvider;
-use Dimer47\Zero\Console\AddCommand;
 use Dimer47\Zero\Console\InstallCommand;
 use Dimer47\Zero\Console\PublishCommand;
 
@@ -31,7 +30,6 @@ class ZeroServiceProvider extends ServiceProvider implements DeferrableProvider
         if ($this->app->runningInConsole()) {
             $this->commands([
                 InstallCommand::class,
-                AddCommand::class,
                 PublishCommand::class,
             ]);
         }

@@ -1,24 +1,29 @@
-# Laravel Zero - Docker Wrapper
+# Zero - Docker CLI Environment for Laravel Zero
 
 <p align="center">
     <img src="https://raw.githubusercontent.com/laravel-zero/docs/master/images/logo/laravel-zero-readme.png" alt="Laravel Zero" width="450">
 </p>
 
-Un package Docker minimaliste pour Laravel Zero, inspiré de Laravel Sail mais adapté aux applications CLI.
+<p align="center">
+    <a href="https://packagist.org/packages/dimer47/zero"><img src="https://img.shields.io/packagist/v/dimer47/zero" alt="Latest Stable Version"></a>
+    <a href="https://packagist.org/packages/dimer47/zero"><img src="https://img.shields.io/packagist/l/dimer47/zero" alt="License"></a>
+</p>
 
-## ✨ Fonctionnalités
+A minimal Docker wrapper for Laravel Zero, inspired by Laravel Sail but designed specifically for CLI applications.
 
-- 🐳 **Docker Alpine** ultra-léger (~50MB vs ~1GB)
-- 🚀 **Multi-version PHP** : Support de PHP 8.2, 8.3 et 8.4
-- 🎯 **Minimal** : Uniquement les extensions PHP essentielles pour Laravel Zero
-- 📦 **Prêt à l'emploi** : Installation en une commande
-- 🔧 **Flexible** : Compatible avec tous les projets Laravel Zero
+## ✨ Features
 
-## 📋 Prérequis
+- 🚀 **Ephemeral Containers** - Each command runs in a fresh container, no daemon needed
+- 🎯 **Auto-detection** - Automatically detects your application binary from `composer.json`
+- 🐘 **Multi PHP Version** - Support for PHP 8.2, 8.3, and 8.4
+- 🪶 **Alpine-based** - Ultra-lightweight images (~50MB vs ~1GB)
+- 📦 **Ready to use** - One command installation
 
-- Docker Desktop (macOS/Windows) ou Docker Engine (Linux)
-- Docker Compose
-- Un projet Laravel Zero
+## 📋 Requirements
+
+- Docker Desktop (macOS/Windows) or Docker Engine (Linux)
+- Docker Compose v2+
+- A Laravel Zero project
 
 ## 🚀 Installation
 
@@ -26,103 +31,189 @@ Un package Docker minimaliste pour Laravel Zero, inspiré de Laravel Sail mais a
 composer require dimer47/zero --dev
 ```
 
-Publier les fichiers Docker :
+Publish the Docker configuration:
 
 ```bash
 php application zero:install
 ```
 
-Cela créera :
-- `docker/` - Runtimes Docker pour PHP 8.2, 8.3, 8.4
-- `docker-compose.yml` - Configuration Docker Compose
-- `zero` - Script wrapper pour exécuter les commandes
+This will:
+- Create `docker-compose.yml` - Docker Compose configuration
+- Set `PHP_VERSION` in your `.env` file (created if needed)
 
-## 📖 Utilisation
-
-### Commandes de base
+You can specify a different PHP version:
 
 ```bash
-# Démarrer le conteneur
-./zero up -d
-
-# Arrêter le conteneur
-./zero stop
-
-# Exécuter une commande Artisan
-./zero artisan inspire
-./zero artisan app:build
-
-# Exécuter Composer
-./zero composer install
-./zero composer require vendor/package
-
-# Exécuter PHP
-./zero php -v
-./zero php artisan list
-
-# Shell interactif
-./zero shell
-
-# Aide
-./zero help
+php application zero:install --php=8.4
 ```
 
-### Multi-version PHP
-
-Vous pouvez spécifier la version PHP dans votre `.env` :
-
-```env
-PHP_VERSION=8.4
-ZEROUSER=1000
-ZEROGROUP=1000
-```
-
-Ou la modifier dans `docker-compose.yml`.
-
-### Build de l'image
+Build the Docker image:
 
 ```bash
-# Build simple
-./zero build
-
-# Rebuild sans cache
-./zero build --no-cache
+./vendor/bin/zero build
 ```
 
-## 🎨 Configuration
+## 📖 Usage
 
-### Variables d'environnement
+### 🎯 Application Commands
 
-Créez un fichier `.env` à la racine de votre projet :
+```bash
+# List all available application commands
+./vendor/bin/zero list
+
+# Run any application command (binary auto-detected from composer.json)
+./vendor/bin/zero server:list
+./vendor/bin/zero make:command MyCommand
+```
+
+### ⚡ Laravel Zero Commands
+
+```bash
+# Run tests
+./vendor/bin/zero test
+
+# Build PHAR executable (output in builds/ directory)
+./vendor/bin/zero app:build my-app
+
+# Install optional components
+./vendor/bin/zero app:install
+
+# Rename your application
+./vendor/bin/zero app:rename my-new-name
+
+# Create a new command
+./vendor/bin/zero make:command
+
+# Create a new test
+./vendor/bin/zero make:test
+```
+
+### 🐘 PHP & Composer
+
+```bash
+# Run PHP commands
+./vendor/bin/zero php -v
+./vendor/bin/zero php script.php
+
+# Run Composer commands
+./vendor/bin/zero composer install
+./vendor/bin/zero composer require vendor/package
+./vendor/bin/zero composer update
+```
+
+### 🧪 Testing & Code Style
+
+```bash
+# Run Pest tests
+./vendor/bin/zero pest
+./vendor/bin/zero pest --filter=MyTest
+./vendor/bin/zero pest --coverage
+
+# Run Pint code style fixer
+./vendor/bin/zero pint
+./vendor/bin/zero pint --test      # Check without fixing
+./vendor/bin/zero pint --dirty     # Only changed files
+./vendor/bin/zero pint app/        # Specific directory
+```
+
+### 🐚 Container Access
+
+```bash
+# Start an interactive shell
+./vendor/bin/zero shell
+./vendor/bin/zero bash
+```
+
+### 🐳 Docker Management
+
+```bash
+# Build the Docker image
+./vendor/bin/zero build
+
+# Rebuild without cache
+./vendor/bin/zero build --no-cache
+```
+
+## ⚙️ Configuration
+
+### Environment Variables
+
+Create a `.env` file at your project root:
 
 ```env
-# Version PHP (8.2, 8.3, ou 8.4)
+# PHP version (8.2, 8.3, or 8.4)
 PHP_VERSION=8.3
 
-# UID/GID pour les permissions de fichiers
+# UID/GID for file permissions (match your local user)
 ZEROUSER=1000
 ZEROGROUP=1000
 ```
 
-### Structure des fichiers
+### 🏷️ Multiple Projects
 
-```
-votre-projet/
-├── docker/
-│   └── runtimes/
-│       ├── 8.2/
-│       ├── 8.3/
-│       └── 8.4/
-├── docker-compose.yml
-├── zero (script wrapper)
-└── .env
+By default, all Laravel Zero projects using the same PHP version share the same Docker image (`zero-8.3/app`). This is efficient for most use cases since the image only contains PHP and system extensions, while your code and dependencies are mounted via volumes.
+
+However, if you need to customize the Docker image for a specific project (e.g., adding extra PHP extensions), you can isolate it by setting `COMPOSE_PROJECT_NAME` in your `.env`:
+
+```env
+COMPOSE_PROJECT_NAME=my-project
 ```
 
-## 🔨 Développement
+This will create a separate image named `my-project-zero-8.3/app`, preventing conflicts with other projects.
 
-### Extensions PHP incluses
+### Docker Compose
 
-Les images Docker incluent uniquement les extensions essentielles pour Laravel Zero :
+The default `docker-compose.yml`:
+
+```yaml
+services:
+    laravel.zero:
+        build:
+            context: ./vendor/dimer47/zero/runtimes/${PHP_VERSION:-8.3}
+            dockerfile: Dockerfile
+            args:
+                ZEROGROUP: '${ZEROGROUP:-1000}'
+                ZEROUSER: '${ZEROUSER:-1000}'
+        image: zero-${PHP_VERSION:-8.3}/app
+        extra_hosts:
+            - 'host.docker.internal:host-gateway'
+        environment:
+            ZEROUSER: '${ZEROUSER:-1000}'
+            ZEROGROUP: '${ZEROGROUP:-1000}'
+        volumes:
+            - '.:/var/www/html'
+        networks:
+            - zero
+networks:
+    zero:
+        driver: bridge
+```
+
+## 🔧 How It Works
+
+Unlike Laravel Sail which runs a persistent container, Zero uses **ephemeral containers** optimized for CLI workflows:
+
+1. 📦 Each command spawns a new container
+2. ⚡ The command executes
+3. 🗑️ The container is automatically removed
+
+This approach is more efficient for CLI applications where you run occasional commands rather than maintaining a web server.
+
+### 🎯 Binary Auto-Detection
+
+Zero automatically reads your `composer.json` to find your application binary:
+
+```json
+{
+    "bin": ["my-app"]
+}
+```
+
+This means `./vendor/bin/zero list` will execute `php my-app list` inside the container.
+
+## 🔌 PHP Extensions
+
+The Docker images include essential extensions for Laravel Zero:
 
 - PDO / PDO MySQL
 - Zip
@@ -131,46 +222,56 @@ Les images Docker incluent uniquement les extensions essentielles pour Laravel Z
 - PCntl
 - BCMath
 
-### Personnalisation
+The images also include useful system tools: `git`, `curl`, `jq` (JSON parsing), `composer`.
 
-Pour ajouter des extensions PHP, éditez les `Dockerfiles` dans `docker/runtimes/{version}/`.
+### Adding Extensions
 
-## 📝 Exemples
+To add more PHP extensions, create your own Dockerfile extending the base image, or copy the runtime to your project and customize it.
 
-### Build d'un PHAR
+## 📚 Command Reference
 
-```bash
-./zero composer install
-./zero artisan app:build mon-app
-```
+| Command | Description |
+|---------|-------------|
+| `zero` | Display help |
+| `zero list` | List all application commands |
+| `zero <command>` | Run application command |
+| `zero build` | Build Docker image |
+| `zero php ...` | Run PHP command |
+| `zero composer ...` | Run Composer command |
+| `zero pest ...` | Run Pest tests |
+| `zero pint ...` | Run Pint code fixer |
+| `zero shell` | Start interactive shell |
+| `zero test` | Run application tests |
+| `zero app:build` | Build PHAR executable |
+| `zero app:install` | Install optional components |
+| `zero app:rename` | Rename application |
+| `zero make:command` | Create new command |
+| `zero make:test` | Create new test |
 
-### Exécuter des tests
+## ⚖️ Comparison with Laravel Sail
 
-```bash
-./zero pest
-./zero phpunit
-```
+| Feature | Laravel Sail | Zero |
+|---------|--------------|------|
+| Target | Web applications | CLI applications |
+| Container model | Persistent (up/stop) | Ephemeral (run/exit) |
+| Base image | Ubuntu (~1GB) | Alpine (~50MB) |
+| Services | MySQL, Redis, etc. | PHP only |
+| Binary detection | `artisan` hardcoded | Auto from `composer.json` |
 
-### Formatter le code
+## 🤝 Contributing
 
-```bash
-./zero pint
-```
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-## 🤝 Contribution
+## 📄 License
 
-Les contributions sont les bienvenues !
+This package is open-source software licensed under the [MIT license](LICENSE.md).
 
-## 📄 Licence
+## 🙏 Credits
 
-Ce package est un logiciel open-source sous licence [MIT](LICENSE.md).
-
-## 🙏 Crédits
-
-- Inspiré de [Laravel Sail](https://github.com/laravel/sail) par Taylor Otwell
-- Adapté pour Laravel Zero par [Dimitri Iachimoe](https://github.com/dimer47)
+- Inspired by [Laravel Sail](https://github.com/laravel/sail) by Taylor Otwell
+- Adapted for Laravel Zero by [Dimitri Iachi](https://github.com/dimer47)
 
 ## 🆘 Support
 
-- [Documentation Laravel Zero](https://laravel-zero.com/)
+- [Laravel Zero Documentation](https://laravel-zero.com/)
 - [GitHub Issues](https://github.com/dimer47/zero/issues)
