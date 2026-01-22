@@ -1,6 +1,18 @@
 # Release Notes
 
-## [Unreleased](https://github.com/dimer47/zero/compare/v1.0.0...HEAD)
+## [Unreleased](https://github.com/dimer47/zero/compare/v1.0.1...HEAD)
+
+## v1.0.1 - 2026-01-22
+
+### Changed
+
+- Moved `install` and `publish` commands from PHP to bash script for standalone execution without Docker
+- Commands now work before Docker is configured (`zero install` creates docker-compose.yml)
+- Simplified ZeroServiceProvider (removed command registration)
+
+### Removed
+
+- Removed `InstallCommand.php` and `PublishCommand.php` (logic now in bin/zero)
 
 ## v1.0.0 - 2026-01-22
 

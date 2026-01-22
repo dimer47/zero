@@ -2,12 +2,9 @@
 
 namespace Dimer47\Zero;
 
-use Illuminate\Contracts\Support\DeferrableProvider;
 use Illuminate\Support\ServiceProvider;
-use Dimer47\Zero\Console\InstallCommand;
-use Dimer47\Zero\Console\PublishCommand;
 
-class ZeroServiceProvider extends ServiceProvider implements DeferrableProvider
+class ZeroServiceProvider extends ServiceProvider
 {
     /**
      * Bootstrap any application services.
@@ -16,23 +13,7 @@ class ZeroServiceProvider extends ServiceProvider implements DeferrableProvider
      */
     public function boot()
     {
-        $this->registerCommands();
         $this->configurePublishing();
-    }
-
-    /**
-     * Register the console commands for the package.
-     *
-     * @return void
-     */
-    protected function registerCommands()
-    {
-        if ($this->app->runningInConsole()) {
-            $this->commands([
-                InstallCommand::class,
-                PublishCommand::class,
-            ]);
-        }
     }
 
     /**
@@ -51,18 +32,5 @@ class ZeroServiceProvider extends ServiceProvider implements DeferrableProvider
                 __DIR__ . '/../bin/zero' => $this->app->basePath('zero'),
             ], ['zero', 'zero-bin']);
         }
-    }
-
-    /**
-     * Get the services provided by the provider.
-     *
-     * @return array
-     */
-    public function provides()
-    {
-        return [
-            InstallCommand::class,
-            PublishCommand::class,
-        ];
     }
 }

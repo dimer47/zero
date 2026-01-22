@@ -32,6 +32,10 @@ function display_help {
     echo "${YELLOW}Usage:${NC}" >&2
     echo "  zero COMMAND [options] [arguments]"
     echo
+    echo "${YELLOW}Setup (run these first):${NC}"
+    echo "  ${GREEN}zero install${NC}            Install docker-compose.yml and configure .env"
+    echo "  ${GREEN}zero publish${NC}            Publish Docker runtimes to docker/ directory"
+    echo
     echo "${YELLOW}Docker:${NC}"
     echo "  ${GREEN}zero build${NC}              Build the Docker image"
     echo "  ${GREEN}zero build --no-cache${NC}   Rebuild without cache"
@@ -79,6 +83,131 @@ if [ -n "$APP_ENV" ] && [ -f ./.env."$APP_ENV" ]; then
     source ./.env."$APP_ENV";
 elif [ -f ./.env ]; then
     source ./.env;
+fi
+
+# Get the directory where this script is located (the package's bin directory)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PACKAGE_DIR="$(dirname "$SCRIPT_DIR")"
+
+# Handle "install" command - creates docker-compose.yml and updates .env
+if [ "$1" == "install" ] || [ "$1" == "zero:install" ]; then
+    shift 1
+
+    # Parse options
+    PHP_VERSION="8.3"
+    DEVCONTAINER=false
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            --php=*)
+                PHP_VERSION="${1#*=}"
+                shift
+                ;;
+            --php)
+                PHP_VERSION="$2"
+                shift 2
+                ;;
+            --devcontainer)
+                DEVCONTAINER=true
+                shift
+                ;;
+            *)
+                shift
+                ;;
+        esac
+    done
+
+    # Validate PHP version
+    if [[ ! "$PHP_VERSION" =~ ^(8\.2|8\.3|8\.4|8\.5)$ ]]; then
+        echo "${BOLD}Invalid PHP version [${PHP_VERSION}]. Supported versions: 8.2, 8.3, 8.4, 8.5${NC}" >&2
+        exit 1
+    fi
+
+    # Create docker-compose.yml
+    COMPOSE_FILE="docker-compose.yml"
+    if [ -f "$COMPOSE_FILE" ]; then
+        echo -n "The file ${COMPOSE_FILE} already exists. Do you want to replace it? [y/N] "
+        read -r REPLY
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            echo "Skipping docker-compose.yml creation."
+        else
+            cp "${PACKAGE_DIR}/stubs/compose.stub" "$COMPOSE_FILE"
+            echo "${GREEN}Created ${COMPOSE_FILE}${NC}"
+        fi
+    else
+        cp "${PACKAGE_DIR}/stubs/compose.stub" "$COMPOSE_FILE"
+        echo "${GREEN}Created ${COMPOSE_FILE}${NC}"
+    fi
+
+    # Update .env with PHP version
+    if [ -f ".env" ]; then
+        if grep -q "^PHP_VERSION=" .env; then
+            if [[ "$MACHINE" == "mac" ]]; then
+                sed -i '' "s/^PHP_VERSION=.*/PHP_VERSION=${PHP_VERSION}/" .env
+            else
+                sed -i "s/^PHP_VERSION=.*/PHP_VERSION=${PHP_VERSION}/" .env
+            fi
+        else
+            echo "PHP_VERSION=${PHP_VERSION}" >> .env
+        fi
+    else
+        echo "PHP_VERSION=${PHP_VERSION}" > .env
+    fi
+    echo "${GREEN}Set PHP_VERSION=${PHP_VERSION} in .env${NC}"
+
+    # Create devcontainer if requested
+    if [ "$DEVCONTAINER" == true ]; then
+        mkdir -p .devcontainer
+        cp "${PACKAGE_DIR}/stubs/devcontainer.stub" .devcontainer/devcontainer.json
+        echo "${GREEN}Created .devcontainer/devcontainer.json${NC}"
+    fi
+
+    echo ""
+    echo "${GREEN}Zero scaffolding installed successfully.${NC}"
+    echo ""
+    echo "Build the Docker image:"
+    echo "  ${BOLD}./vendor/bin/zero build${NC}"
+    echo ""
+    echo "Then run your commands:"
+    echo "  ${BOLD}./vendor/bin/zero list${NC}"
+    echo ""
+    exit 0
+fi
+
+# Handle "publish" command - publishes Docker runtimes to docker/ directory
+if [ "$1" == "publish" ] || [ "$1" == "zero:publish" ]; then
+    shift 1
+
+    DOCKER_DIR="docker"
+
+    if [ -d "$DOCKER_DIR" ]; then
+        echo -n "The directory ${DOCKER_DIR}/ already exists. Do you want to replace it? [y/N] "
+        read -r REPLY
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            echo "Skipping docker/ directory creation."
+            exit 0
+        fi
+        rm -rf "$DOCKER_DIR"
+    fi
+
+    # Copy runtimes
+    cp -r "${PACKAGE_DIR}/runtimes" "$DOCKER_DIR"
+    echo "${GREEN}Published Docker runtimes to ${DOCKER_DIR}/${NC}"
+
+    # Update docker-compose.yml to use local runtimes
+    if [ -f "docker-compose.yml" ]; then
+        if [[ "$MACHINE" == "mac" ]]; then
+            sed -i '' 's|./vendor/dimer47/zero/runtimes|./docker|g' docker-compose.yml
+        else
+            sed -i 's|./vendor/dimer47/zero/runtimes|./docker|g' docker-compose.yml
+        fi
+        echo "${GREEN}Updated docker-compose.yml to use local runtimes${NC}"
+    fi
+
+    echo ""
+    echo "${GREEN}Docker runtimes published successfully.${NC}"
+    echo "You can now customize the Dockerfiles in ${DOCKER_DIR}/"
+    echo ""
+    exit 0
 fi
 
 # Define environment variables...
